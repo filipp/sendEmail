@@ -37,6 +37,7 @@
 ##############################################################################
 use strict;
 use IO::Socket;
+use Term::ReadKey;
 
 
 ########################
@@ -456,7 +457,11 @@ sub processCommandLine {
             $SIG{'ALRM'} = sub { quit("ERROR => Timeout waiting for password input", 1); };
             alarm(60) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32
             print "Password: ";
-            $opt{'password'} = <STDIN>; chomp $opt{'password'};
+            ReadMode 'noecho';
+            $opt{'password'} = ReadLine 0;
+            chomp $opt{'password'};
+            ReadMode 'normal';
+            # $opt{'password'} = <STDIN>; chomp $opt{'password'};
             if (!$opt{'password'}) {
                 quit("ERROR => A username for SMTP authentication was specified, but no password!", 1);
             }
@@ -1903,7 +1908,7 @@ else {
     if ($conf{'tls_server'} == 1 and $conf{'tls_client'} == 1 and $opt{'tls'} =~ /^(yes|auto)$/) {
         printmsg("DEBUG => Starting TLS", 2);
         if (SMTPchat('STARTTLS')) { quit($conf{'error'}, 1); }
-        if (! IO::Socket::SSL->start_SSL($SERVER, SSL_version => 'SSLv3 TLSv1')) {
+        if (! IO::Socket::SSL->start_SSL($SERVER, SSL_version => 'SSLv23:!SSLv2')) {
             quit("ERROR => TLS setup failed: " . IO::Socket::SSL::errstr(), 1);
         }
         printmsg("DEBUG => TLS: Using cipher: ". $SERVER->get_cipher(), 3);
