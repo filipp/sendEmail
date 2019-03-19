@@ -453,7 +453,7 @@ sub processCommandLine {
     if ( $opt{'username'} ) {
         if (!$opt{'password'}) {
             ## Prompt for a password since one wasn't specified with the -xp option.
-            $SIG{'ALRM'} = sub { quit("ERROR => Timeout waiting for password inpupt", 1); };
+            $SIG{'ALRM'} = sub { quit("ERROR => Timeout waiting for password input", 1); };
             alarm(60) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32
             print "Password: ";
             $opt{'password'} = <STDIN>; chomp $opt{'password'};
