@@ -121,7 +121,7 @@ my ${colorBold}   = "\033[1m";
 my ${colorNoBold} = "\033[0m";
 
 ## Don't use shell escape codes on Windows systems
-if ($^O =~ /win/i) {
+if ($^O =~ /mswin/i) {
     ${colorRed} = ${colorGreen} = ${colorCyan} = ${colorWhite} = ${colorNormal} = ${colorBold} = ${colorNoBold} = "";
 }
 
@@ -163,7 +163,7 @@ sub initialize {
     $SIG{'TERM'}  = sub { quit("EXITING: Received SIG$_[0]", 1); };
   
     ## ALARM and HUP signals are not supported in Win32
-    unless ($^O =~ /win/i) {
+    unless ($^O =~ /mswin/i) {
         $SIG{'HUP'}   = sub { quit("EXITING: Received SIG$_[0]", 1); };
         $SIG{'ALRM'}  = sub { quit("EXITING: Received SIG$_[0]", 1); };
     }
@@ -454,7 +454,7 @@ sub processCommandLine {
         if (!$opt{'password'}) {
             ## Prompt for a password since one wasn't specified with the -xp option.
             $SIG{'ALRM'} = sub { quit("ERROR => Timeout waiting for password inpupt", 1); };
-            alarm(60) if ($^O !~ /win/i);  ## alarm() doesn't work in win32
+            alarm(60) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32
             print "Password: ";
             $opt{'password'} = <STDIN>; chomp $opt{'password'};
             if (!$opt{'password'}) {
@@ -553,9 +553,9 @@ sub SMTPchat {
     
     ## Read a response from the server
     $SIG{'ALRM'} = sub { $conf{'error'} = "alarm"; $SERVER->close(); };
-    alarm($conf{'alarm'}) if ($^O !~ /win/i);  ## alarm() doesn't work in win32;
+    alarm($conf{'alarm'}) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32;
     my $result = $conf{'SMTPchat_response'} = getResponse(\$SERVER); 
-    alarm(0) if ($^O !~ /win/i);  ## alarm() doesn't work in win32;
+    alarm(0) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32;
     
     ## Generate an alert if we timed out
     if ($conf{'error'} eq "alarm") {
@@ -1031,7 +1031,7 @@ sub get_hostname {
     ## If that didn't get us a hostname, try a few other things
     else {
         ## Windows systems
-        if ($^O !~ /win/i) {
+        if ($^O !~ /mswin/i) {
             if ($ENV{'COMPUTERNAME'}) { $hostname = $ENV{'COMPUTERNAME'}; }
             if (!$hostname) { $hostname = gethostbyname('localhost'); }
             if (!$hostname) { chomp($hostname = `hostname 2> NUL`) };
@@ -1762,7 +1762,7 @@ processCommandLine();
 $conf{'alarm'} = $opt{'timeout'};
 
 ## Abort program after $conf{'alarm'} seconds to avoid infinite hangs
-alarm($conf{'alarm'}) if ($^O !~ /win/i);  ## alarm() doesn't work in win32
+alarm($conf{'alarm'}) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32
 
 
 
@@ -1796,17 +1796,17 @@ if (!($message)) {
     
     ## Read message body from STDIN
     else {
-        alarm($conf{'alarm'}) if ($^O !~ /win/i);  ## alarm() doesn't work in win32
+        alarm($conf{'alarm'}) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32
         if ($conf{'stdout'}) {
             print "Reading message body from STDIN because the '-m' option was not used.\n";
             print "If you are manually typing in a message:\n";
-            print "  - First line must be received within $conf{'alarm'} seconds.\n" if ($^O !~ /win/i);
-            print "  - End manual input with a CTRL-D on its own line.\n\n" if ($^O !~ /win/i);
-            print "  - End manual input with a CTRL-Z on its own line.\n\n" if ($^O =~ /win/i);
+            print "  - First line must be received within $conf{'alarm'} seconds.\n" if ($^O !~ /mswin/i);
+            print "  - End manual input with a CTRL-D on its own line.\n\n" if ($^O !~ /mswin/i);
+            print "  - End manual input with a CTRL-Z on its own line.\n\n" if ($^O =~ /mswin/i);
         }
         while (<STDIN>) {                 ## Read STDIN into $message
             $message .= $_;
-            alarm(0) if ($^O !~ /win/i);  ## Disable the alarm since at least one line was received
+            alarm(0) if ($^O !~ /mswin/i);  ## Disable the alarm since at least one line was received
         }
         printmsg("Message input complete.", 0);
     }
@@ -1838,7 +1838,7 @@ $SIG{'ALRM'} = sub {
     printmsg("HINT => Try specifying a different mail relay with the -s option.", 1);
     quit("", 1);
 };
-alarm($conf{'alarm'}) if ($^O !~ /win/i);  ## alarm() doesn't work in win32;
+alarm($conf{'alarm'}) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32;
 $SERVER = IO::Socket::INET->new( PeerAddr  => $conf{'server'},
                                  PeerPort  => $conf{'port'},
                                  LocalAddr => $conf{'bindaddr'},
@@ -1846,7 +1846,7 @@ $SERVER = IO::Socket::INET->new( PeerAddr  => $conf{'server'},
                                  Autoflush => 1,
                                  timeout   => $conf{'alarm'},
 );
-alarm(0) if ($^O !~ /win/i);  ## alarm() doesn't work in win32;
+alarm(0) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32;
 
 ## Make sure we got connected
 if ( (!$SERVER) or (!$SERVER->opened()) ) {
@@ -2140,7 +2140,7 @@ else {
     ## Send Attachemnts
     if (scalar(@attachments) > 0) {
         ## Disable the alarm so people on modems can send big attachments
-        alarm(0) if ($^O !~ /win/i);  ## alarm() doesn't work in win32
+        alarm(0) if ($^O !~ /mswin/i);  ## alarm() doesn't work in win32
         
         ## Send the attachments
         foreach my $filename (@attachments) {
