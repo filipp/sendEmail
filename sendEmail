@@ -39,7 +39,6 @@ use strict;
 use IO::Socket;
 use Term::ReadKey;
 
-
 ########################
 ##  Global Variables  ##
 ########################
@@ -324,7 +323,7 @@ sub processCommandLine {
             $subject = "";
             while ($ARGS[$counter] && $ARGS[$counter] !~ /^-/) {
                 if ($subject) { $subject .= " "; }
-                $subject .= $ARGS[$counter];
+                $subject .= '=?utf-8?B?' . base64_encode($ARGS[$counter]) . '?=';
                 $counter++;
             }   $counter--;
         }
